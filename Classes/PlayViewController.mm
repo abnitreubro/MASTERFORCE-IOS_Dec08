@@ -206,7 +206,9 @@
     
     imgView.frame = _interfaceScrollView.frame;
     containerCiew.frame = _interfaceScrollView.frame;
+    
 }
+
 
 
 
@@ -225,6 +227,19 @@
                                              selector:@selector(EnterForeground)
                                                  name:UIApplicationWillEnterForegroundNotification
                                                object:nil];
+    
+    [self.view layoutIfNeeded];
+    
+    _interfaceScrollView.zoomScale=1.0f;
+    _interfaceScrollView.transform = CGAffineTransformIdentity;
+    imgView.transform = CGAffineTransformIdentity;
+    scaleValue = 1;
+    
+    _interfaceScrollView.center = CGPointMake(self.view.center.x ,
+                                              self.view.center.y );
+    
+    imgView.frame = _interfaceScrollView.frame;
+    containerCiew.frame = _interfaceScrollView.frame;
 }
 
 
@@ -463,14 +478,11 @@
     
     timeNumber++;
     NSString *strTime=[self getRecordTime:timeNumber];
-    NSLog(@"%@",strTime);
+
+    
     labelRecording.text=[NSString stringWithFormat:@"%@%@",NSLocalizedStringFromTable(@"play_recording", @STR_LOCALIZED_FILE_NAME, nil),strTime];
     //    return;
     btnUpdateTime.title=[NSString stringWithFormat:@"Recording...%d",timeNumber];
-    
-    NSLog(@"startRecordTime  timeNumber=%d",timeNumber);
-    
-    NSLog(@"set Time%ld",[[[NSUserDefaults standardUserDefaults] valueForKey:@"recordingTime"] integerValue]);
     
     if (timeNumber==([[[NSUserDefaults standardUserDefaults] valueForKey:@"recordingTime"] integerValue])*60) {
         
@@ -674,14 +686,8 @@
 {
     UIImage *img = (UIImage*)data;
     
-    NSLog(@"Updated ImgView h%f",img.size.height);
-    NSLog(@"Updated ImgView w%f",img.size.width);
-    
     imgView.image = img;
     
-    
-    NSLog(@"Updated height%f",imgView.frame.size.height);
-    NSLog(@"Updated width%f",imgView.frame.size.width);
     [img release];
     
     //show timestamp
@@ -1213,7 +1219,7 @@
             return YES;
         }
     }
-    NSLog(@"memory=%@",memory);
+//    NSLog(@"memory=%@",memory);
     
     [self performSelectorOnMainThread:@selector(showMemory:) withObject:memory waitUntilDone:NO];
     
@@ -1299,8 +1305,6 @@
         [recordingTimerVideo invalidate];
         recordingTimerVideo=nil;
         
-        NSLog(@"numberOfScreenshots is %@",numberOfScreenshots);
-        
         isRecording=NO;
         
         isProcessing=YES;
@@ -1333,7 +1337,87 @@
             //            UIImage *recorderImage = [UIImage imageNamed:@"Video_Recording"];
             //            [button setImage:recorderImage forState:UIControlStateNormal];
             
+            if ([[[NSUserDefaults standardUserDefaults]objectForKey:@"isRecordAudio"]integerValue]==1) {
+                
+                
+                [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
+                    if (granted) {
+                        
+                        [[NSOperationQueue mainQueue]addOperationWithBlock:^{
+                            
+                            [self changeButtonImageForRecording];
+                            [btnSnapshot setEnabled:NO];
+                            [btnRecord setEnabled:NO];
+                            
+                            
+                            startedAt = [NSDate date];
+                            self.viewRecordingTime.hidden=NO;
+                            
+                            isRecording=YES;
+                            
+                            
+                            [self initializeAudioRecorder];
+                            AVAudioSession *session = [AVAudioSession sharedInstance];
+                            [session setActive:YES error:nil];
+                            
+                            audioOrVideo = @"Audio";
+                            // Start recording
+                            [recorder record];
+                            
+                            currentTimeInSeconds = 0;
+                            
+                            self.labelRecording.text = [self formattedTime:currentTimeInSeconds];
+                            self.labelRecording.hidden=NO;
+                            // [screenCaptureView startRecording];
+                            
+                            // Working For Audio Recording For Merging with Video
+                            
+                            numberOfScreenshots=[[NSMutableArray alloc]init];
+                            
+                            recordingTimerVideo =[NSTimer scheduledTimerWithTimeInterval:0.25
+                                                                                  target:self
+                                                                                selector:@selector(timerMethodExecute:)
+                                                                                userInfo:nil
+                                                                                 repeats:YES];
+                            
+                            
+                            
+                            
+                            if (!currentTimeInSeconds) {
+                                currentTimeInSeconds = 0 ;
+                            }
+                            
+                            if (!recordingTimer) {
+                                recordingTimer = [self createTimer:1.0:YES];
+                            }
+                            
+                            if (!autometicStopTimer) {
+                                
+                                autometicStopTimer=[self createTimer:[[[NSUserDefaults standardUserDefaults]objectForKey:@"recordingTime"]floatValue]*60:NO];
+                            }
+
+                        }];
+
+                    }
+                    else {
+                        
+                        [[NSOperationQueue mainQueue]addOperationWithBlock:^{
+                            // Microphone disabled code
+                            NSLog(@"Microphone disabled");
+
+                        UIAlertView * alert  = [[UIAlertView alloc]initWithTitle:@"ATTENTION" message:@"Failed to get permission to access microphone\n \nWithout microphone access permission you will not be able to record video with 'Recording Voice' enabled. \n \n Go into the device Settings and make sure microphone for Masterforce™ Inspection Camera/Video is enabled (Microphone settings are located under Privacy Settings)" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                        
+                        [alert show];
+
+                        }];
+                        return;
+
+                    }
+                }];
+                
+            }
             
+            else {
             [self changeButtonImageForRecording];
             [btnSnapshot setEnabled:NO];
             [btnRecord setEnabled:NO];
@@ -1344,19 +1428,6 @@
             
             isRecording=YES;
             
-            NSLog(@"Audio Recording status is %@",[[NSUserDefaults standardUserDefaults]objectForKey:@"isRecordAudio"]);
-            
-            if ([[[NSUserDefaults standardUserDefaults]objectForKey:@"isRecordAudio"]integerValue]==1) {
-                [self initializeAudioRecorder];
-                AVAudioSession *session = [AVAudioSession sharedInstance];
-                [session setActive:YES error:nil];
-                
-                audioOrVideo = @"Audio";
-                // Start recording
-                [recorder record];
-                
-            }
-            else
                 audioOrVideo = @"Video";
             
             currentTimeInSeconds = 0;
@@ -1391,7 +1462,7 @@
                 autometicStopTimer=[self createTimer:[[[NSUserDefaults standardUserDefaults]objectForKey:@"recordingTime"]floatValue]*60:NO];
             }
             
-            
+            }
             
         }
         else
@@ -1659,14 +1730,7 @@
                                 tempDetailsArray = [[NSMutableArray alloc] initWithObjects:@"Success",audioOrVideo,@"p2p", nil];
                                 [[NSUserDefaults standardUserDefaults] setValue:tempDetailsArray forKey:@"recording"];
                                 
-                                
-                                
-                                NSLog(@"%@", self.navigationController.viewControllers);
                                 if ([self.navigationController.viewControllers containsObject:self]) {
-                                    
-//                                    [CustomToast showWithText:@"Video saved successfully"
-//                                                    superView:self.interfaceScrollView
-//                                                    bLandScap:NO];
 
                                     messageLabel.hidden = NO;
                                     messageLabel.alpha = 1;
@@ -1676,12 +1740,8 @@
                                         
                                         messageLabel.alpha = 0;
                                     }];
-
                                 }
-
-                                
                             }];
-//                            [self performSelectorOnMainThread:@selector(showVideoSuccessMessage) withObject:nil waitUntilDone:NO];
                         }
                     } else
                         
@@ -1709,24 +1769,9 @@
 }
 
 
--(void)showVideoSuccessMessage{
-    
-    tempDetailsArray = [[NSMutableArray alloc] initWithObjects:@"Success",audioOrVideo,@"p2p", nil];
-    [[NSUserDefaults standardUserDefaults] setValue:tempDetailsArray forKey:@"recording"];
-    
-    
-    
-    NSLog(@"%@", self.navigationController.viewControllers);
-    if ([self.navigationController.viewControllers containsObject:self]) {
-        
-        [CustomToast showWithText:@"Video saved successfully"
-                        superView:self.interfaceScrollView
-                        bLandScap:NO];
-    }
-}
+
 
 -(CVPixelBufferRef) pixelBufferFromCGImage: (CGImageRef) image
-
 {
     // This again was just our utility class for the height & width of the
     // incoming video (640 height x 480 width)
@@ -1749,8 +1794,6 @@
                                           height, kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef) options,
                                           
                                           &pxbuffer);
-    
-    
     
     NSParameterAssert(status == kCVReturnSuccess && pxbuffer != NULL);
     
@@ -1787,6 +1830,8 @@
 
 
 
+
+
 #pragma mark- end
 
 #pragma mark- Audio Capture Functionality
@@ -1799,11 +1844,9 @@
     [formatter setDateFormat: @"yyyyMMddHHmmss"];
     NSString *strDate = [formatter stringFromDate:[NSDate date]]; // Convert date to string
     
-    
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0]; // Get documents folder
     NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"/%@",@""]];
-    
     
     if (![[NSFileManager defaultManager] fileExistsAtPath:dataPath])//Check
     {
@@ -1811,7 +1854,6 @@
     }
     
     NSString *savedImagePath = [dataPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.m4a",strDate]];
-    
     
     [[NSUserDefaults standardUserDefaults] setObject:savedImagePath forKey:@"audio"];
     
@@ -1864,11 +1906,11 @@
     NSFileManager *fileManager = [NSFileManager defaultManager];
     // [fileManager removeItemAtPath:[AudioURl path]  error:NULL];
     
-    NSLog(@"savedImagePathTemp is %@",[[NSUserDefaults standardUserDefaults] valueForKey:@"audio"]);
+//    NSLog(@"savedImagePathTemp is %@",[[NSUserDefaults standardUserDefaults] valueForKey:@"audio"]);
     
     AudioURlP2P=[NSURL fileURLWithPath:[[NSUserDefaults standardUserDefaults] valueForKey:@"audio"]];
     
-    NSLog(@"AudioURlP2P is %@",AudioURlP2P);
+//    NSLog(@"AudioURlP2P is %@",AudioURlP2P);
     
     AVURLAsset  *audioAsset = [[AVURLAsset alloc]initWithURL:AudioURlP2P options:nil];
     CMTimeRange audio_timeRange = CMTimeRangeMake(kCMTimeZero, audioAsset.duration);
@@ -1958,15 +2000,8 @@
                  tempDetailsArray = [[NSMutableArray alloc] initWithObjects:@"Success",audioOrVideo,@"p2p", nil];
                  [[NSUserDefaults standardUserDefaults] setValue:tempDetailsArray forKey:@"recording"];
                  
-                 
-                 
-                 NSLog(@"%@", self.navigationController.viewControllers);
                  if ([self.navigationController.viewControllers containsObject:self]) {
                      
-//                     [CustomToast showWithText:@"Video saved successfully"
-//                                     superView:self.interfaceScrollView
-//                                     bLandScap:NO];
-
                      messageLabel.hidden = NO;
                      messageLabel.alpha = 1;
                      messageLabel.text = @"Video saved successfully";
@@ -1975,12 +2010,8 @@
                          
                          messageLabel.alpha = 0;
                      }];
-
                  }
-                 
-                 
              }];
-//             [self performSelectorOnMainThread:@selector(showVideoSuccessMessage) withObject:nil waitUntilDone:NO];
          });
      }
      ];
@@ -2090,13 +2121,6 @@
     imgView.frame = _interfaceScrollView.frame;
     containerCiew.frame = _interfaceScrollView.frame;
     
-    //    imgView.center = _interfaceScrollView.center;
-    NSLog(@"_interfaceScrollView w:%f",_interfaceScrollView.frame.size.width);
-    NSLog(@"_interfaceScrollView h:%f",_interfaceScrollView.frame.size.height);
-    NSLog(@"imgView w:%f",imgView.frame.size.width);
-    NSLog(@"imgView h:%f",imgView.frame.size.height);
-    NSLog(@"self.view w:%f",self.view.frame.size.width);
-    NSLog(@"self.view h:%f",self.view.frame.size.height);
 }
 
 

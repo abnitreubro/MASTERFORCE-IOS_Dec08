@@ -118,19 +118,62 @@
             cell.cameraName.text=@"MX1021 Masterforce™ Wi-Fi Inspection Camera/Video";
             cell.cameraImage.image = [UIImage imageNamed:@"MX1021-200"];
         }
+        cell.cameraName.textColor = [UIColor blackColor];
         cell.userInteractionEnabled=NO;
         cell.cameraName.enabled=NO;
     }
     else{
         
-        if ([sSIDName isEqualToString:@"Masterforce_MX1020_Inspec_Camera"] || [sSIDName isEqualToString:@"CAM9B1F"] || [sSIDName isEqualToString:@"Masterforce _MX1020_Inspec_camera"] || [sSIDName isEqualToString:@"Masterforce_MX1020_Inspec_camera"]) {
+        /*
+         Commenting for Changing SSID for Final Version
+         
+         
+         if ([sSIDName isEqualToString:@"Masterforce_MX1020_Inspec_Camera"] || [sSIDName isEqualToString:@"CAM9B1F"] || [sSIDName isEqualToString:@"Masterforce _MX1020_Inspec_camera"] || [sSIDName isEqualToString:@"Masterforce_MX1020_Inspec_camera"]) {
+         if (indexPath.row==0)
+         {
+         cell.cameraName.text= @"MX1020 Masterforce™ Wi-Fi Inspection Camera/Video";
+         cell.cameraImage.image = [UIImage imageNamed:@"MX1020-200"];
+         cell.userInteractionEnabled=YES;
+         cell.cameraName.enabled=YES;
+         cell.cameraName.textColor = [UIColor colorWithRed:76.0/255.0 green:217.0/255.0 blue:100.0/255.0 alpha:1];
+         }
+         else
+         {
+         cell.cameraName.text=@"MX1021 Masterforce™ Wi-Fi Inspection Camera/Video";
+         cell.cameraImage.image = [UIImage imageNamed:@"MX1021-200"];
+         cell.userInteractionEnabled = NO;
+         cell.cameraName.enabled = NO;
+         cell.cameraName.textColor = [UIColor blackColor];
+         }
+         }
+         else if ([sSIDName isEqualToString:@"Masterforce_MX1021_Inspec_Camera"]||[sSIDName isEqualToString:@"Steelman_PRO_Video_Scope"]) {
+         if (indexPath.row==0)
+         {
+         cell.cameraName.text= @"MX1020 Masterforce™ Wi-Fi Inspection Camera/Video";
+         cell.cameraImage.image = [UIImage imageNamed:@"MX1020-200"];
+         cell.userInteractionEnabled=NO;
+         cell.cameraName.enabled=NO;
+         cell.cameraName.textColor = [UIColor blackColor];
+         }
+         else
+         {
+         cell.cameraName.text=@"MX1021 Masterforce™ Wi-Fi Inspection Camera/Video";
+         cell.cameraImage.image = [UIImage imageNamed:@"MX1021-200"];
+         cell.userInteractionEnabled=YES;
+         cell.cameraName.enabled=YES;
+         cell.cameraName.textColor = [UIColor colorWithRed:76.0/255.0 green:217.0/255.0 blue:100.0/255.0 alpha:1];
+         }
+         
+        */
+        
+        if ([sSIDName isEqualToString:@"Masterforce_MX1020_Inspec_Camera"]) {
             if (indexPath.row==0)
             {
                 cell.cameraName.text= @"MX1020 Masterforce™ Wi-Fi Inspection Camera/Video";
                 cell.cameraImage.image = [UIImage imageNamed:@"MX1020-200"];
                 cell.userInteractionEnabled=YES;
                 cell.cameraName.enabled=YES;
-                
+                cell.cameraName.textColor = [UIColor colorWithRed:76.0/255.0 green:217.0/255.0 blue:100.0/255.0 alpha:1];
             }
             else
             {
@@ -138,17 +181,17 @@
                 cell.cameraImage.image = [UIImage imageNamed:@"MX1021-200"];
                 cell.userInteractionEnabled = NO;
                 cell.cameraName.enabled = NO;
-                
+                cell.cameraName.textColor = [UIColor blackColor];
             }
         }
-        else if ([sSIDName isEqualToString:@"Masterforce_MX1021_Inspec_Camera"]||[sSIDName isEqualToString:@"Steelman_PRO_Video_Scope"]) {
+        else if ([sSIDName isEqualToString:@"Masterforce_MX1021_Inspec_Camera"]) {
             if (indexPath.row==0)
             {
                 cell.cameraName.text= @"MX1020 Masterforce™ Wi-Fi Inspection Camera/Video";
                 cell.cameraImage.image = [UIImage imageNamed:@"MX1020-200"];
                 cell.userInteractionEnabled=NO;
                 cell.cameraName.enabled=NO;
-                
+                cell.cameraName.textColor = [UIColor blackColor];
             }
             else
             {
@@ -156,6 +199,7 @@
                 cell.cameraImage.image = [UIImage imageNamed:@"MX1021-200"];
                 cell.userInteractionEnabled=YES;
                 cell.cameraName.enabled=YES;
+                cell.cameraName.textColor = [UIColor colorWithRed:76.0/255.0 green:217.0/255.0 blue:100.0/255.0 alpha:1];
             }
         }
         
@@ -173,6 +217,7 @@
             }
             cell.userInteractionEnabled = NO;
             cell.cameraName.enabled = NO;
+            cell.cameraName.textColor = [UIColor blackColor];
         }
     }
     

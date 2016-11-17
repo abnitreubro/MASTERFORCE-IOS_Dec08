@@ -167,14 +167,14 @@
 
     AVAudioRecorder *recorder;
     
-    __weak IBOutlet UILabel *messageLabel;
+    IBOutlet UILabel *messageLabel;
     NSTimer*waitingTimer,*recordingTimer,*autometicStopTimer;
     int currentTimeInSeconds;
     
     NSMutableArray * tempDetailsArray, *p2pPathDetails;
     NSString * audioOrVideo, * connectionStatus;
     
-    __weak IBOutlet UIButton *recordingButton;
+    IBOutlet UIButton *recordingButton;
     
     NSInteger counter;
     CGAffineTransform globalTransform;

@@ -443,15 +443,11 @@ static NSData *_endMarkerData = nil;
         
         
     }
-//    UIButton *button= (UIButton*)cameraBtn.customView;
-//    UIImage *recorderImage = [UIImage imageNamed:@"Camera_NotClicked"];
-//    [button setImage:recorderImage forState:UIControlStateNormal];
 
+    
     [self changeButtonImageForCaptureImage];
 
-//    [CustomToast showWithText:@"Snapshot saved successfully"
-//                    superView:interfaceScrollView
-//                    bLandScap:NO];
+
     mesageLabel.hidden = NO;
     mesageLabel.alpha = 1;
     mesageLabel.text = @"Snapshot saved successfully";
@@ -644,7 +640,6 @@ static NSData *_endMarkerData = nil;
         [recordingTimerVideo invalidate];
         recordingTimerVideo=nil;
         
-        NSLog(@"numberOfScreenshots is %@",numberOfScreenshots);
         
         isRecording=NO;
         
@@ -672,71 +667,175 @@ static NSData *_endMarkerData = nil;
 
     }
     else{
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [[self.navigationItem.rightBarButtonItems objectAtIndex:0] setEnabled:NO];
-            [[self.navigationItem.rightBarButtonItems objectAtIndex:1] setEnabled:NO];
-            
-        }];
-        
-        [cameraBtn setEnabled:NO];
-        [videoRecorderBtn setEnabled:NO];
-
-        [self changeButtonImageForRecording];
-        
-
-//        UIButton *button= (UIButton*)videoRecorderBtn.customView;
-//        UIImage *recorderImage = [UIImage imageNamed:@"Video_Recording"];
-//        [button setImage:recorderImage forState:UIControlStateNormal];
-        
-        startedAt = [NSDate date];
-
-        isRecording=YES;
-        
-        NSLog(@"Audio Recording status is %@",[[NSUserDefaults standardUserDefaults]objectForKey:ISRECORDAUDIO]);
-        
         if ([[[NSUserDefaults standardUserDefaults]objectForKey:ISRECORDAUDIO]integerValue]==1) {
-            [self initializeAudioRecorder];
-            AVAudioSession *session = [AVAudioSession sharedInstance];
-            [session setActive:YES error:nil];
-            
-            // Start recording
-            [recorder record];
-            
-        }
-        currentTimeInSeconds = 0;
-        
-        self.lblRecordingTime.text = [self formattedTime:currentTimeInSeconds];
-        self.viewRecordingTime.hidden=NO;
-       // [screenCaptureView startRecording];
 
-        // Working For Audio Recording For Merging with Video
+        
+        [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
+            if (granted) {
+                [[NSOperationQueue mainQueue]addOperationWithBlock:^{
 
-        numberOfScreenshots=[[NSMutableArray alloc]init];
-        
-        recordingTimerVideo =[NSTimer scheduledTimerWithTimeInterval:0.25
-                                                         target:self
-                                                       selector:@selector(timerMethodExecute:)
-                                                       userInfo:nil
-                                                        repeats:YES];
-        
-        
-        
-        
-        if (!currentTimeInSeconds) {
-            currentTimeInSeconds = 0 ;
-        }
-        
-        if (!recordingTimer) {
-            recordingTimer = [self createTimer:1.0:YES];
-        }
-        
-        if (!autometicStopTimer) {
+                // Microphone enabled code
+                NSLog(@"Microphone enabled");
+                
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    [[self.navigationItem.rightBarButtonItems objectAtIndex:0] setEnabled:NO];
+                    [[self.navigationItem.rightBarButtonItems objectAtIndex:1] setEnabled:NO];
+                    
+                }];
+                
+                [cameraBtn setEnabled:NO];
+                [videoRecorderBtn setEnabled:NO];
+                
+                [self changeButtonImageForRecording];
+                
+                
+                //        UIButton *button= (UIButton*)videoRecorderBtn.customView;
+                //        UIImage *recorderImage = [UIImage imageNamed:@"Video_Recording"];
+                //        [button setImage:recorderImage forState:UIControlStateNormal];
+                
+                startedAt = [NSDate date];
+                
+                isRecording=YES;
+                
+                NSLog(@"Audio Recording status is %@",[[NSUserDefaults standardUserDefaults]objectForKey:ISRECORDAUDIO]);
+                
+
+                    [self initializeAudioRecorder];
+                    AVAudioSession *session = [AVAudioSession sharedInstance];
+                    [session setActive:YES error:nil];
+                    
+                    // Start recording
+                    [recorder record];
+                    
+              
+                currentTimeInSeconds = 0;
+                
+                self.lblRecordingTime.text = [self formattedTime:currentTimeInSeconds];
+                self.viewRecordingTime.hidden=NO;
+                // [screenCaptureView startRecording];
+                
+                // Working For Audio Recording For Merging with Video
+                
+                numberOfScreenshots=[[NSMutableArray alloc]init];
+                
+                recordingTimerVideo =[NSTimer scheduledTimerWithTimeInterval:0.25
+                                                                      target:self
+                                                                    selector:@selector(timerMethodExecute:)
+                                                                    userInfo:nil
+                                                                     repeats:YES];
+                
+                
+                
+                
+                if (!currentTimeInSeconds) {
+                    currentTimeInSeconds = 0 ;
+                }
+                
+                if (!recordingTimer) {
+                    recordingTimer = [self createTimer:1.0:YES];
+                }
+                
+                if (!autometicStopTimer) {
+                    
+                    autometicStopTimer=[self createTimer:[[[NSUserDefaults standardUserDefaults]objectForKey:RECORDINGTIME]floatValue]*60:NO];
+                    
+                }
+
+                }];
+            }
+            else {
+                [[NSOperationQueue mainQueue]addOperationWithBlock:^{
+
+                // Microphone disabled code
+                NSLog(@"Microphone disabled");
+                
+                UIAlertView * alert  = [[UIAlertView alloc]initWithTitle:@"ATTENTION" message:@"Failed to get permission to access microphone\n \nWithout microphone access permission you will not be able to record video with 'Recording Voice' enabled. \n \n Go into the device Settings and make sure microphone for Masterforce™ Inspection Camera/Video is enabled (Microphone settings are located under Privacy Settings)" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                
+                [alert show];
+
+                }];
+                return;
+            }
+        }];
+         
+//            switch ([[AVAudioSession sharedInstance] recordPermission]) {
+//                case AVAudioSessionRecordPermissionGranted:
+//                    
+//                    break;
+//                case AVAudioSessionRecordPermissionDenied:
+//                {
+//            
+//                    
+//                }
+//                    break;
+//                case AVAudioSessionRecordPermissionUndetermined:{
+//                    // This is the initial state before a user has made any choice
+//                    // You can use this spot to request permission here if you want
+//                    
+//                    }
+//                    break;
+//                default:
+//                    break;
+//            }
             
-            autometicStopTimer=[self createTimer:[[[NSUserDefaults standardUserDefaults]objectForKey:RECORDINGTIME]floatValue]*60:NO];
-            
         }
         
+        else {
+            
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [[self.navigationItem.rightBarButtonItems objectAtIndex:0] setEnabled:NO];
+                [[self.navigationItem.rightBarButtonItems objectAtIndex:1] setEnabled:NO];
+                
+            }];
+            
+            [cameraBtn setEnabled:NO];
+            [videoRecorderBtn setEnabled:NO];
+            
+            [self changeButtonImageForRecording];
+            
+            
+            //        UIButton *button= (UIButton*)videoRecorderBtn.customView;
+            //        UIImage *recorderImage = [UIImage imageNamed:@"Video_Recording"];
+            //        [button setImage:recorderImage forState:UIControlStateNormal];
+            
+            startedAt = [NSDate date];
+            
+            isRecording=YES;
+            
+            currentTimeInSeconds = 0;
+            
+            self.lblRecordingTime.text = [self formattedTime:currentTimeInSeconds];
+            self.viewRecordingTime.hidden=NO;
+            // [screenCaptureView startRecording];
+            
+            // Working For Audio Recording For Merging with Video
+            
+            numberOfScreenshots=[[NSMutableArray alloc]init];
+            
+            recordingTimerVideo =[NSTimer scheduledTimerWithTimeInterval:0.25
+                                                                  target:self
+                                                                selector:@selector(timerMethodExecute:)
+                                                                userInfo:nil
+                                                                 repeats:YES];
+            
+            
+            
+            
+            if (!currentTimeInSeconds) {
+                currentTimeInSeconds = 0 ;
+            }
+            
+            if (!recordingTimer) {
+                recordingTimer = [self createTimer:1.0:YES];
+            }
+            
+            if (!autometicStopTimer) {
+                
+                autometicStopTimer=[self createTimer:[[[NSUserDefaults standardUserDefaults]objectForKey:RECORDINGTIME]floatValue]*60:NO];
+                
+            }
+            
+        }
     }
 }
 
@@ -965,13 +1064,16 @@ static NSData *_endMarkerData = nil;
                         }
                         else{
                             
-                            mesageLabel.hidden = NO;
-                            mesageLabel.alpha = 1;
-                            mesageLabel.text = @"Video saved successfully";
-                            
-                            [UIView animateWithDuration:5.0 animations:^{
+                            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                                 
-                                mesageLabel.alpha = 0;
+                                mesageLabel.hidden = NO;
+                                mesageLabel.alpha = 1;
+                                mesageLabel.text = @"Video saved successfully";
+                                
+                                [UIView animateWithDuration:5.0 animations:^{
+                                    
+                                    mesageLabel.alpha = 0;
+                                }];
                             }];
                             
 //                            [self performSelectorOnMainThread:@selector(showVideoSuccessMessage) withObject:nil waitUntilDone:NO];
@@ -1306,13 +1408,6 @@ static NSData *_endMarkerData = nil;
     
     interfaceScrollView.center = CGPointMake(self.view.center.x ,
                                               self.view.center.y );
-    
-    NSLog(@"%f",interfaceScrollView.center.y);
-    NSLog(@"%f",self.view.frame.size.height);
-    NSLog(@"%f",self.view.center.y);
-    NSLog(@"%f",interfaceScrollView.frame.size.height);
-    NSLog(@"%f",containerCiew.frame.size.height);
-    
     containerCiew.center = interfaceScrollView.center;
     interfaceImage.center = interfaceScrollView.center;
     interfaceImage.frame = interfaceScrollView.frame;
@@ -1497,7 +1592,7 @@ static NSData *_endMarkerData = nil;
             return YES;
         }
     }
-    NSLog(@"memory=%@",memory);
+//    NSLog(@"memory=%@",memory);
     
     
     return NO;
